@@ -5,6 +5,9 @@ _____________Светильник для рабочего места____________
 Джойстик(SW = D2; X = A0; Y = A1)
 */
 #include <Arduino.h>
+
+#define DEADZONE 100 // значение мертвой зоны для джойстика, при условии что средняя позиция 512 плюс минус дребезг и смещения
+
 int indication_R = 3; //свет индикатора
 int indication_G = 6; //свет идикатора
 int indication_B = 5; //свет идикатора
@@ -19,9 +22,12 @@ bool last_button = false; //старое состояние кнопки
 bool enable_general_led = true; //состояние основного света
 
 int LED(int r, int g, int b, bool enable) { //функция для зажигания света
-  analogWrite(indication_R, r); //свет индикатора горит постоянно
-  analogWrite(indication_G, g);
-  analogWrite(indication_B, b);
+ /*
+эти три строки не несут никакого смысла. все исполняется в словиях проверки enable
+ analogWrite(indication_R, r); //свет индикатора горит постоянно
+ analogWrite(indication_G, g);
+ analogWrite(indication_B, b);
+*/
   if(enable == true) { //если состояние кнопки как true то зажигаем основной свет
     analogWrite(general_led_R, r);
     analogWrite(general_led_G, g);
@@ -64,10 +70,14 @@ void loop() {
   int val_Y = map(data_Y, 0, 1024, 0, 3); //ограничиваем ось Y интервалом от 0 до 2
   if(val_Y == 2) {//если val_Y равен 2
     delay(500);//то ждем 500 мс
+    // я бы сделал так 
+    // if ( data_Y > 512 + DEADZONE){
     if(val_Y == 2) {//проверяем снова val_Y
       led_case++;//увеличиваем переменную для switch на 1 для перехода в кейс
       led_case = min(led_case, 4);//ограничиваем переменную максимальным колличеством кейсом в switch
+     // здесь нужно дождаться пока джойстик вернут в исходное 
     }//if(val_Y == 2)
+  //} else if ( data_Y < 512 - DEADZONE){
   }else if(val_Y == 0) {//если val_Y равен 0
     delay(500);//то ждем 500 мс
     if(val_Y == 0) {//проверяем снова val_Y
